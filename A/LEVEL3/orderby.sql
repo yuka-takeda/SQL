@@ -39,8 +39,7 @@ SELECT
     口座番号
 FROM
     廃止口座
-ORDER BY
-    1
+ORDER BY 1
 /※30
 SELECT 名義
 FROM 口座 

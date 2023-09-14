@@ -1,5 +1,5 @@
 /※6
-SELECT 商品コード
+SELECT *
 FROM 商品
 WHERE 商品コード = 'W1252'
 /※7
@@ -9,35 +9,34 @@ WHERE 商品コード = 'S0023'
 /※8
 SELECT *
 FROM 商品
-WHERE 単価<1000
+WHERE 単価 <= 1000
 /※9
 SELECT *
 FROM 商品
-WHERE 単価 > 50000
+WHERE 単価 >= 50000
 /※10
-SELECT 残高
+SELECT *
 FROM 注文
 WHERE 注文日 >= '2018-01-01'
 /※11
 SELECT *
 FROM 注文
-WHERE 注文日 < '2017-11-01'
+WHERE 注文日 < '2017-12-01'
 /※12
 SELECT *
 FROM 商品
-WHERE 商品区分 IS NULL '1'
+WHERE 商品区分 <> '1'
 /※13
 SELECT *
 FROM 注文
 WHERE クーポン割引料 IS NULL
 /※14
-DELEAT
-FROM 商品
-WHERE 商品コード LIKE '%N'
+DELETE FROM 商品
+WHERE 商品コード LIKE 'N%'
 /※15
 SELECT 商品コード, 商品名 ,単価
 FROM 商品
-WHERE 更新日 LIKE '%コート%'
+WHERE 商品名 LIKE '%コート%'
 /※16
 SELECT 商品コード,商品区分
 FROM 商品
@@ -51,29 +50,31 @@ SELECT *
 FROM 注文
 WHERE 商品コード IN('N0501' , 'N1021' , 'N0223')
 /※19
-SELECT 商品コード,商品区分
+SELECT *
 FROM 商品
-WHERE 商品名 ALL ('3' , '水玉')
+WHERE 商品区分 = '3'
+AND 商品名 LIKE '%水玉%'
 /※20
 SELECT *
 FROM 商品
-WHERE 商品名 IN('軽い' , 'ゆるふわ')
+WHERE 商品名 LIKE '%軽い%' 
+OR 商品名 LIKE '%ゆるふわ%'
 /※21
 SELECT *
 FROM 商品
 WHERE (商品区分 = '1'
-OR 商品区分 = '2')
-AND (単価 <= 3000
-OR 単価 >= 10000)
+AND 単価 <= 3000)
+OR (商品区分 = '3'
+AND 単価 >= 10000)
 /※22
-SELECT *
+SELECT 商品コード
 FROM 注文
 WHERE 数量 >= 3
-AND 更新日 BETWEEN '2018-03-01' AND '2018-03-31'
+AND 注文日 >= '2018-03-01' AND 注文日 < '2018-04-01'
 /※23
 SELECT *
 FROM 注文
-WHERE 数量>= 10 AND クーポン割引料 >= 0
+WHERE 数量>= 10 OR クーポン割引料 IS NOT NULL
 /※24
 商品テーブル : 商品コード
-注文テーブル : 注文番号、商品コード
+注文テーブル : 注文日,注文番号、注文枝番

@@ -1,68 +1,153 @@
 /※61
-SELECT 注文番号,注文枝番,商品コード,数量
-FROM 注文
-JOIN 商品
-ON 注文.商品コード = 商品.商品コード
-WHERE 注文番号 = '201801130115'
-ORDER BY 注文番号,注文枝番
+SELECT
+    T.注文番号,
+    T.注文枝番,
+    T.商品コード,
+    S.商品名,
+    T.数量
+FROM
+    注文 AS T
+    JOIN
+        商品 AS S
+    ON  T.商品コード = S.商品コード
+WHERE
+    T.注文番号 = '201801130115'
+ORDER BY
+    T.注文番号,
+    T.注文枝番
 /※62
-SELECT 注文日,注文番号,注文枝番,数量,注文金額
-FROM 廃盤商品
-JOIN 注文
-ON 廃盤商品.商品コード = 注文.商品コード
-WHERE 注文金額 = 単価*数量
-AND 商品コード = 'A0009'
+SELECT
+    T.注文日,
+    T.注文番号,
+    T.注文枝番,
+    T.数量,
+    H.単価 * T.数量 AS 注文金額
+FROM
+    注文 AS T
+    JOIN
+        廃番商品 AS H
+    ON  T.商品コード = H.商品コード
+WHERE
+    T.注文日 > H.廃番日
 /※63
-SELECT 商品コード,商品名,単価,注文日,注文番号,数量
-FROM 商品
-JOIN 注文
-ON 商品.商品コード = 注文.商品コード
-JOIN 売上金額 = 単価*数量
-WHERE 商品コード = 'S0604'
-ORDER BY 注文日
+SELECT
+    S.商品コード,
+    S.商品名,
+    S.単価,
+    T.注文日,
+    T.注文番号,
+    T.数量、S.単価 * T.数量 AS 売上金額
+FROM
+    商品 AS S
+    JOIN
+        注文 AS T
+    ON  S.商品コード = T.商品コード
+WHERE
+    S.商品コード = 'S0604'
+ORDER BY
+    T.注文番号
 /※64
-SELECT 商品コード,商品名
-FROM 商品
-WHERE 注文日 = '2018-08'
+SELECT
+    T.商品コード,
+    S.商品名
+FROM
+    注文 AS T
+    JOIN
+        商品 AS S
+    ON  T.商品コード = S.商品コード
+WHERE
+    T.注文日 >= '2016-08-01'
+AND T.注文日 < '2016-09-01'
 /※65
-SELECT 商品コード,商品名 AS '廃盤'
-FROM 商品,廃盤商品
-WHERE 注文日 = '2018-08'
+SELECT
+    T.商品コード,
+    COALESCE(S.商品名, '廃番') AS 商品名
+FROM
+    注文 AS T
+    LEFT JOIN
+        商品 AS S
+    ON  T.商品コード = S.商品コード
+WHERE
+    T.注文日 >= '2016-08-01'
+AND T.注文日 < '2016-09-01'
 /※66
-SELECT 注文日,商品コード,商品名,数量
-FROM 商品
-JOIN 注文
-ON 商品.商品コード = 注文.商品コード
-WHERE 商品区分 = '雑貨'
-AND 商品名 = 商品コード + ':' + 商品名 AS 商品
+SELECT
+    T.注文日,
+    S.商品コード || ':' || S.商品名 AS 商品,
+    COALESCE(T.数量, 0) AS 数量
+FROM
+    注文 AS T
+    RIGHT JOIN
+        商品 AS S
+    ON  T.商品コード = S.商品コード
+WHERE
+    S.商品区分 = '3'
 /※67
-SELECT 注文日,商品コード,商品名,数量
-FROM 商品
-JOIN 注文
-ON 商品.商品コード = 注文.商品コード
-JOIN (SELECT 商品コード,商品名,廃番日,売上個数
-FROM 廃盤商品
-WHERE 商品コード = 商品コード + ':(廃番済み)')
-ON 注文.商品コード = 廃番商品.商品コード
-WHERE 商品区分 = '雑貨'
+SELECT
+    T.注文日,
+    COALESCE(S.商品コード || ':' || S.商品名, T.商品コード || ':(廃番済み)') AS 商品,
+    COALESCE(T.数量, 0) AS 数量
+FROM
+    注文 AS T
+    FULL JOIN
+        商品 AS S
+    ON  T.商品コード = S.商品コード
+WHERE
+    S.商品区分 = '3'
 /※68
-SELECT 注文日,注文番号,注文枝番,商品コード,商品名,単価,数量,注文金額
-FROM 注文
-JOIN 廃盤商品
-ON 注文.商品コード = 廃盤商品.商品コード
-WHERE 注文金額 = 単価*数量-クーポン割引料
-AND 注文番号 = '201704030010'
+SELECT
+    T.注文日,
+    T.注文番号,
+    T.注文枝番,
+    T.商品コード,
+    COALESCE(S.商品名,, H.商品名) AS 商品名,
+    COALESCE(S.単価, H.単価) AS 単価,
+    T.数量 AS 数量,
+    COALESCE(S.単価, H.単価) * T.数量 - COALESCE(T.クーポン割引料, 0) AS 注文金額
+FROM
+    注文 AS T
+    LEFT JOIN
+        商品 AS S
+    ON  T.商品コード = S.商品コード
+    LEFT JOIN
+        廃番商品 AS H
+    ON  T.商品コード = H.商品コード
+WHERE
+    注文番号 = '201704030010'
 /※69
-SELECT 商品コード,商品名,単価
-FROM 商品
-JOIN (SELECT COUNT(数量)
-FROM 注文)
-ON 商品.商品コード = 注文.商品コード
-WHERE SUM(単価*数量) AS '総売上金額'
-AND 商品コード = '%B'
-ORDER BY 商品コード
+SELECT
+    S.商品コード,
+    S.商品名,
+    S.単価,
+    COALESCE(T.数量, 0) AS 売上数量,
+    S.単価 * COALESCE(T.数量, 0) AS 総売上金額
+FROM
+    商品 AS S
+    LEFT JOIN
+        (
+            SELECT
+                商品コード,
+                SUM(数量) AS 数量
+            FROM
+                注文
+            WHERE
+                商品コード LIKE 'B%'
+            GROUP BY
+                商品コード
+        ) AS T
+    ON  S.商品コード = T.商品コード
+WHERE
+    S.商品コード LIKE 'B%'
+ORDER BY
+    S.商品コード
 /※70
-SELECT A.商品コード,A.商品名,B.関連商品コード,B.関連商品名
-FROM 商品 AS A
-LEFT JOIN 商品 AS B
-ON A.口座番号 = B.口座番号
+SELECT
+    S1.商品コード,
+    S1.商品名,
+    S2.商品コード AS 関連商品コード,
+    S2.商品コード AS 関連商品名
+FROM
+    商品 AS S1
+    JOIN
+        商品 AS S2
+    ON  S1.商品コード = S2.関連商品コード
